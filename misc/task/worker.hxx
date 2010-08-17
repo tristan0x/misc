@@ -1,7 +1,7 @@
 // \file misc/task/worker.hxx
 //
 // Started on  Sun Aug 15 14:05:31 2010 Tristan Carel
-// Last update Tue Aug 17 00:04:32 2010 Tristan Carel
+// Last update Tue Aug 17 22:57:09 2010 Tristan Carel
 //
 // Copyright 2010  Tristan Carel <tristan.carel@gmail.com>
 //
@@ -37,8 +37,8 @@ namespace misc {
 namespace task {
 
   worker::worker (size_t threads_count /* = 1*/)
-    : terminated_ (true),
-      threads_count_ (threads_count)
+    : threads_count_ (threads_count),
+      terminated_ (true)
   {
     start_threads ();
   }

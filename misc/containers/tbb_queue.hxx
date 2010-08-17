@@ -27,7 +27,7 @@
 #ifndef __MISC_CONTAINERS_QUEUE_HXX__
 # define __MISC_CONTAINERS_QUEUE_HXX__
 
-# include <containers/tbb_queue.hh>
+# include <misc/containers/tbb_queue.hh>
 
 namespace misc {
 namespace containers {

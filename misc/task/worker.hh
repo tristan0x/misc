@@ -1,7 +1,7 @@
 /// \file misc/task/worker.hh
 //
 // Started on  Sun Aug 15 13:39:21 2010 Tristan Carel
-// Last update Mon Aug 16 23:51:03 2010 Tristan Carel
+// Last update Tue Aug 17 22:57:25 2010 Tristan Carel
 //
 // Copyright 2010  Tristan Carel <tristan.carel@gmail.com>
 //
@@ -51,13 +51,13 @@ namespace task {
 class worker
 {
 public:
-  /// thread pool is started in the constructor
+  /// threads pool is started in the constructor
   worker (size_t threads_count = 1);
   ~worker ();
 
-  /// start thread pool
+  /// start threads pool
   void start_threads ();
-  /// stop thread pool
+  /// stop threads pool
   void stop_threads ();
 
   /** \brief execute a task asynchronously
@@ -74,7 +74,7 @@ private:
   /// Internal task type
   typedef std::function<void (void)> task_type;
   /// Internal task queue type
-  typedef queue<task_type> tasks_queue_type;
+  typedef containers::tbb_queue<task_type> tasks_queue_type;
   /// Internal thread type
   typedef std::unique_ptr<std::thread> thread_ptr;
 

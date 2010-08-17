@@ -3,7 +3,7 @@
 ## Mail    <tristan.carel@gmail.com>
 ##
 ## Started on  Sat Dec 12 13:42:15 2009 Tristan Carel
-## Last update Sun Dec 13 12:48:52 2009 Tristan Carel
+## Last update Tue Aug 17 22:57:47 2010 Tristan Carel
 ##
 ## Copyright (C) 2009 Tristan Carel
 ## This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,7 @@ worker: worker.o
 	$(CXX) worker.o -ltbb -o $@
 
 .cc.o: $<
-	$(CXX) -std=c++0x -pthread -Wall $< -o  $@
+	$(CXX) -c $(INCLUDE) -std=c++0x -pthread -Wall $< -o  $@
 
 tests: test
 	./test
