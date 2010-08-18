@@ -1,5 +1,7 @@
-/// \file misc/stlext/pprint.hh
-/// \brief STL extensions
+/// \file misc/io/async_read.hh
+//
+// Started on  Tue Aug 17 22:59:43 2010 Tristan Carel
+// Last update Wed Aug 18 23:26:44 2010 Tristan Carel
 //
 // Copyright 2010  Tristan Carel <tristan.carel@gmail.com>
 //
@@ -25,81 +27,49 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef __MISC_STLEXT_PPRINT_HH_
-# define __MISC_STLEXT_PPRINT_HH_
+#ifndef   __MISC_IO_ASYNC_READ_HH__
+# define   __MISC_IO_ASYNC_READ_HH__
 
-# include <string>
+# include <fstream>
+# include <vector>
 
-# include <boost/numeric/conversion/converter.hpp>
-# include <boost/format.hpp>
+# include <misc/task/worker.hh>
+
 
 namespace misc {
-namespace stlext {
 
-template <class Int>
-std::string humanize_number(const Int& i, const char* unit = "")
+struct async_read
 {
-  size_t stage = 0;
+  typedef std::vector<char> buffer_type;
 
-	// allez hop, on est anal sur la conversion vers le double...
-	boost::numeric::converter<double, Int> IntToDouble;
-	double val = IntToDouble(i);
+  inline
+  async_read (std::ifstream& stream, long block_size = 4096,
+              size_t max_pending_buffers = 10);
+  virtual ~async_read ();
 
-	while (val >= 1024.0)
-	{
-		val /= 1024.0;
-		stage++;
-	}
+  /**
+   *  \brief Read a block in the stream
+   *  \return true if eof is reached, false otherwise
+   */
+  inline
+  bool get (buffer_type& buffer);
+  inline
+  bool eof () const;
 
-  // print 2 digits after comma
-	std::ostringstream output;
-	output << boost::format("%1$4.2f") % val;
+private:
+  void block_reader ();
 
-	switch (stage)
-	{
+  std::ifstream& stream_;
+  const long block_size_;
+  containers::tbb_queue<buffer_type> pending_blocks_;
+  std::mutex mutex_;
+  std::condition_variable control_;
+  const size_t max_pending_buffers_;
+  std::thread reader_;
+};
 
-	case 1:
-		// Kilo
-		output << " k";
-		break;
-
-	case 2:
-		// Mega
-		output << " M";
-		break;
-
-	case 3:
-		// Giga
-		output << " G";
-		break;
-
-	case 4:
-		// Teta
-		output << " T";
-		break;
-
-	case 5:
-		// Peta
-		output << " P";
-		break;
-
-	case 6:
-		// Exa !!1!!!
-		output << " E";
-		break;
-
-	}
-
-	// add unit if provided, might be null
-	if (unit)
-	{
-		output << unit;
-	}
-
-	return output.str();
-}
-
-} // namespace stlext
 } // namespace misc
 
-#endif // !__MISC_STLEXT_PPRINT_HH_
+# include <misc/io/async_read.hxx>
+
+#endif // ndef __MISC_IO_ASYNC_READ_HH__
