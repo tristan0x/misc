@@ -1,0 +1,12 @@
+
+import os
+
+os.environ['LD_LIBRARY_PATH'] = '/home/ken/lib:/usr/local/lib64'
+
+cpp_path_misc_library = os.path.dirname (os.getcwd ())
+
+env = Environment (CC='g++',
+                   CPPFLAGS='-std=c++0x -pthread -Wall -O2',
+                   ENV=os.environ,
+                   CPPPATH=[cpp_path_misc_library])
+env.Program ('async_read.cc', LIBS=['tbb'])
