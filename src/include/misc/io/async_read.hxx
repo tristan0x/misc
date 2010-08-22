@@ -2,7 +2,7 @@
 /// \brief Implementation of struct misc::async_read
 //
 // Started on  Wed Aug 18 22:20:25 2010 Tristan Carel
-// Last update Sat Aug 21 12:16:55 2010 Tristan Carel
+// Last update Sun Aug 22 12:11:04 2010 Tristan Carel
 //
 // Copyright 2010  Tristan Carel <tristan.carel@gmail.com>
 //
@@ -67,7 +67,7 @@ bool async_read::get (buffer_type& buffer)
   if (!pending_blocks_.empty ())
   {
 #if 0
-    buffer_impl_type result;
+    buffer_type result;
     pending_blocks_.pop (result);
 
     // prevent a full buffer copy, thank you rvalues !
@@ -124,7 +124,7 @@ void async_read::block_reader ()
                      });
     }
 
-    buffer_impl_type buffer;
+    buffer_type buffer;
     if (!usable_blocks_.empty ())
       usable_blocks_.try_pop (buffer);
     else
