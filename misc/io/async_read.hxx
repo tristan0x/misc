@@ -1,7 +1,8 @@
 /// \file misc/io/async_read.hxx
+/// \brief Implementation of struct misc::async_read
 //
 // Started on  Wed Aug 18 22:20:25 2010 Tristan Carel
-// Last update Wed Aug 18 23:27:22 2010 Tristan Carel
+// Last update Sat Aug 21 12:16:55 2010 Tristan Carel
 //
 // Copyright 2010  Tristan Carel <tristan.carel@gmail.com>
 //
@@ -32,6 +33,10 @@
 
 namespace misc {
 
+/*--------------.
+| Ctors & Dtors |
+`--------------*/
+
 async_read::async_read (std::ifstream& stream, long block_size /* = 4096 */,
                         size_t max_pending_buffers /* = 10 */ )
 : stream_ (stream),
@@ -46,7 +51,13 @@ async_read::~async_read ()
   reader_.join ();
 }
 
-bool async_read::get (std::vector<char>& buffer)
+
+
+/*------------------------.
+| Public member functions |
+`------------------------*/
+
+bool async_read::get (buffer_type& buffer)
 {
   {
     std::unique_lock<std::mutex> lock (mutex_);
@@ -55,17 +66,49 @@ bool async_read::get (std::vector<char>& buffer)
 
   if (!pending_blocks_.empty ())
   {
-    pending_blocks_.pop (buffer);
+#if 0
+    buffer_impl_type result;
+    pending_blocks_.pop (result);
+
+    // prevent a full buffer copy, thank you rvalues !
+    std::swap (buffer, *result);
+#endif // 0
+
+    pending_blocks_.try_pop (buffer);
+
     control_.notify_all ();
   }
 
-  return !(pending_blocks_.empty () && eof ());
+  return !terminated ();
 }
+
+
+
+void async_read::reuse (const buffer_type& buffer)
+{
+  usable_blocks_.push (buffer);
+}
+
+
+
+
+bool async_read::terminated () const
+{
+  return pending_blocks_.empty () && eof ();
+}
+
+
+
+/*-------------------------.
+| Private member functions |
+`-------------------------*/
 
 bool async_read::eof () const
 {
   return stream_.eof () && stream_.fail ();
 }
+
+
 
 void async_read::block_reader ()
 {
@@ -76,12 +119,26 @@ void async_read::block_reader ()
       control_.wait (lock,
                      [&]
                      {
-                       return pending_blocks_.size () < max_pending_buffers_;
+                       return !usable_blocks_.empty () ||
+                         pending_blocks_.size () < max_pending_buffers_;
                      });
     }
 
-    buffer_type buffer (block_size_);
-    stream_.read (&buffer[0], block_size_);
+    buffer_impl_type buffer;
+    if (!usable_blocks_.empty ())
+      usable_blocks_.try_pop (buffer);
+    else
+    {
+      std::cout << "Allocation" << std::endl;
+      buffer.reset (new buffer_type::element_type (block_size_));
+    }
+
+    stream_.read (&(*buffer)[0], block_size_);
+
+    // resize last buffer to number of bytes read.
+    if (eof ())
+      buffer->resize (stream_.gcount ());
+
     pending_blocks_.push (buffer);
     control_.notify_all ();
   }

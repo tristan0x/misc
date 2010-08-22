@@ -1,7 +1,7 @@
 // \file misc/task/worker.hxx
 //
 // Started on  Sun Aug 15 14:05:31 2010 Tristan Carel
-// Last update Tue Aug 17 22:57:09 2010 Tristan Carel
+// Last update Sat Aug 21 12:16:41 2010 Tristan Carel
 //
 // Copyright 2010  Tristan Carel <tristan.carel@gmail.com>
 //
@@ -129,7 +129,7 @@ namespace task {
 
         if (!terminated_ && !pending_tasks_.empty ())
         {
-          pending_tasks_.pop (task);
+          pending_tasks_.try_pop (task);
           task ();
         }
       }

@@ -41,9 +41,9 @@ void tbb_queue<T>::push (const element_type& e)
 
 
 template <class T>
-void tbb_queue<T>::pop (element_type& e)
+bool tbb_queue<T>::try_pop (element_type& e)
 {
-  queue_.try_pop (e);
+  return queue_.try_pop (e);
 }
 
 
@@ -51,7 +51,7 @@ void tbb_queue<T>::pop (element_type& e)
 template <class T>
 size_t tbb_queue<T>::size () const
 {
-  std::unique_lock<std::mutex> lock (mutex_);
+  std::unique_lock<std::mutex> l (mutex_);
   return queue_.unsafe_size ();
 }
 

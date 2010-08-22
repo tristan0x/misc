@@ -44,16 +44,17 @@ public:
   /// \brief Push an element in the queue.
   void push (const element_type& e);
 
-  /** \brief Pop element from the queue
-   *  Wait for element to be available
+  /** \brief Attempt to dequeue an item
+   *  Does not wait for an item to become available
+   *  \return True if successful, false otherwise.
    */
-  void pop (element_type& e);
-
-  /// \return the queue size
-  size_t size () const;
+  bool try_pop (element_type& e);
 
   /// \return true if the queue is empty, false otherwise.
   bool empty () const;
+
+  /// \return number of pushes minus numbers of pops
+  size_t size () const;
 
 private:
   typedef tbb::concurrent_queue<element_type> queue_type;
