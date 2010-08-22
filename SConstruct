@@ -19,4 +19,4 @@ def create_environment ():
 env = create_environment ()
 Export ('env')
 
-SConscript (['test/SConscript'], exports='env')
+SConscript (['src/impl/misc/SConscript', 'test/SConscript'], exports='env')

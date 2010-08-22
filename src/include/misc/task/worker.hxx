@@ -1,7 +1,7 @@
 // \file misc/task/worker.hxx
 //
 // Started on  Sun Aug 15 14:05:31 2010 Tristan Carel
-// Last update Sat Aug 21 12:16:41 2010 Tristan Carel
+// Last update Sun Aug 22 23:45:31 2010 Tristan Carel
 //
 // Copyright 2010  Tristan Carel <tristan.carel@gmail.com>
 //
@@ -36,105 +36,33 @@
 namespace misc {
 namespace task {
 
-  worker::worker (size_t threads_count /* = 1*/)
-    : threads_count_ (threads_count),
-      terminated_ (true)
-  {
-    start_threads ();
-  }
+/*------------------------.
+| Public member functions |
+`------------------------*/
+
+template <typename TaskFunctor>
+std::shared_future<typename misc::traits::function<TaskFunctor>::return_type>
+worker::operator() (TaskFunctor f)
+{
+  return run<typename misc::traits::function<TaskFunctor>::return_type> (f);
+}
 
 
 
-  worker::~worker ()
-  {
-    stop_threads ();
-  }
+/*-------------------------.
+| Private member functions |
+`-------------------------*/
 
+template <typename ResultType>
+std::shared_future<ResultType>
+worker::run (std::function<ResultType (void)> f)
+{
+  auto promise = std::make_shared<std::promise<ResultType> > ();
+  std::shared_future<ResultType> result = promise->get_future ();
 
-
-  void worker::start_threads ()
-  {
-    std::lock_guard<std::mutex> lock (mutex_);
-
-    if (!terminated_)
-      throw std::runtime_error ("worker threads already running");
-
-    for (size_t i = 0; i < threads_count_; ++i)
-      working_threads_.push_back
-        (thread_ptr (new std::thread ([&] { this->process (); })));
-    terminated_ = false;
-  }
-
-
-  template <typename TaskFunctor>
-  std::shared_future<typename misc::traits::function<TaskFunctor>::return_type>
-  worker::operator() (TaskFunctor f)
-  {
-    return run<typename misc::traits::function<TaskFunctor>::return_type> (f);
-  }
-
-  void worker::stop_threads ()
-  {
-    if (terminated_)
-      throw std::runtime_error ("worker threads already terminated");
-
-    push ([&]
-           {
-             std::lock_guard<std::mutex> lock (mutex_);
-             terminated_ = true;
-             control_.notify_all ();
-           });
-
-    for (auto thread = working_threads_.begin ();
-         thread != working_threads_.end (); ++thread)
-      (*thread)->join ();
-  }
-
-  // private methods
-
-
-
-  template <typename ResultType>
-  std::shared_future<ResultType>
-  worker::run (std::function<ResultType (void)> f)
-  {
-    auto promise = std::make_shared<std::promise<ResultType> > ();
-    std::shared_future<ResultType> result = promise->get_future ();
-
-    this->push (runner<ResultType> (promise, f));
-    return result;
-  }
-
-
-
-  void worker::push (task_type f)
-  {
-    pending_tasks_.push (f);
-    control_.notify_all ();
-  }
-
-
-
-  void worker::process ()
-  {
-    task_type task;
-    auto wait_condition = [&] { return !pending_tasks_.empty () || terminated_; };
-
-    do
-      {
-        {
-          std::unique_lock<std::mutex> lock (mutex_);
-          control_.wait (lock, wait_condition);
-        }
-
-        if (!terminated_ && !pending_tasks_.empty ())
-        {
-          pending_tasks_.try_pop (task);
-          task ();
-        }
-      }
-    while (!terminated_);
-  }
+  this->push (runner<ResultType> (promise, f));
+  return result;
+}
 
 } // namespace task
 } // namespace misc

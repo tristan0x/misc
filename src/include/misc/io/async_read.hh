@@ -1,7 +1,7 @@
 /// \file misc/io/async_read.hh
 //
 // Started on  Tue Aug 17 22:59:43 2010 Tristan Carel
-// Last update Sun Aug 22 11:52:29 2010 Tristan Carel
+// Last update Sun Aug 22 12:34:45 2010 Tristan Carel
 //
 // Copyright 2010  Tristan Carel <tristan.carel@gmail.com>
 //
@@ -43,7 +43,6 @@ struct async_read
 {
   typedef std::shared_ptr<std::vector<char> > buffer_type;
 
-  inline
   async_read (std::ifstream& stream,
               long block_size = 4096,
               size_t max_pending_buffers = 10);
@@ -55,17 +54,14 @@ struct async_read
    *  \return True if there is no more data to read,
    *  false otherwise.
    */
-  inline
   bool get (buffer_type& buffer);
 
   /**
    *  \return True if all data have been read and returned,
    *  false otherwise.
    */
-  inline
   bool terminated () const;
 
-  inline
   void reuse (const buffer_type& buffer);
 
 private:
@@ -73,7 +69,6 @@ private:
    *  \return True if all data from the ifstream have been read,
    *  false otherwise.
    */
-  inline
   bool eof () const;
 
   /**
@@ -98,7 +93,5 @@ private:
 };
 
 } // namespace misc
-
-# include <misc/io/async_read.hxx>
 
 #endif // ndef __MISC_IO_ASYNC_READ_HH__

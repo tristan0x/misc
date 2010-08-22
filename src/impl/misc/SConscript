@@ -1,0 +1,5 @@
+
+Import ('env')
+misc_lib = env.StaticLibrary ('misc', ['io/async_read.cc',
+                                       'task/worker.cc'])
+Export ('misc_lib')

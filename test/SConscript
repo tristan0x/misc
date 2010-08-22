@@ -1,3 +1,4 @@
 
 Import ('env')
-env.Program ('async_read.cc', LIBS=['tbb'])
+Import ('misc_lib')
+env.Program ('async_read.cc', LIBS=['tbb', misc_lib])
